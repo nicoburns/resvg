@@ -12,6 +12,8 @@ use crate::GlyphId;
 use fontdb::Database;
 #[cfg(feature = "text")]
 use fontdb::ID;
+#[cfg(feature = "text")]
+use fontique::Collection;
 use svgtypes::{Length, LengthUnit as Unit, PaintOrderKind, TransformOrigin};
 use tiny_skia_path::PathBuilder;
 
@@ -47,7 +49,7 @@ pub struct Cache {
     /// This fontdb is initialized from [`Options::fontdb`] and then populated
     /// over the course of conversion.
     #[cfg(feature = "text")]
-    pub fontdb: Arc<Database>,
+    pub fonts: Arc<Collection>,
 
     #[cfg(feature = "text")]
     cache_outline: HashMap<(ID, GlyphId), Option<tiny_skia_path::Path>>,
@@ -94,10 +96,10 @@ macro_rules! font_lookup {
 }
 
 impl Cache {
-    pub(crate) fn new(#[cfg(feature = "text")] fontdb: Arc<Database>) -> Self {
+    pub(crate) fn new(#[cfg(feature = "text")] fonts: Arc<Collection>) -> Self {
         Self {
             #[cfg(feature = "text")]
-            fontdb,
+            fonts,
 
             #[cfg(feature = "text")]
             cache_outline: HashMap::new(),
@@ -204,10 +206,10 @@ impl Cache {
         }
     }
 
-    font_lookup!(fontdb_outline, cache_outline, outline, tiny_skia_path::Path);
-    font_lookup!(fontdb_colr, cache_colr, colr, Tree);
-    font_lookup!(fontdb_svg, cache_svg, svg, Node);
-    font_lookup!(fontdb_raster, cache_raster, raster, BitmapImage);
+    font_lookup!(get_outline_glyph, cache_outline, outline, tiny_skia_path::Path);
+    font_lookup!(get_colr_glyph, cache_colr, colr, Tree);
+    font_lookup!(get_svg_glyph, cache_svg, svg, Node);
+    font_lookup!(get_raster_glyph, cache_raster, raster, BitmapImage);
 
     #[cfg(feature = "text")]
     pub(crate) fn has_opsz_axis(&mut self, font: ID) -> bool {
@@ -374,7 +376,7 @@ pub(crate) fn convert_doc(svg_doc: &svgtree::Document, opt: &Options) -> Result<
         masks: Vec::new(),
         filters: Vec::new(),
         #[cfg(feature = "text")]
-        fontdb: opt.fontdb.clone(),
+        fonts: opt.fonts.clone(),
     };
 
     if !svg.is_visible_element(opt) {
@@ -393,7 +395,7 @@ pub(crate) fn convert_doc(svg_doc: &svgtree::Document, opt: &Options) -> Result<
 
     let mut cache = Cache::new(
         #[cfg(feature = "text")]
-        opt.fontdb.clone(),
+        opt.fonts.clone(),
     );
 
     for node in svg_doc.descendants() {
@@ -457,7 +459,7 @@ pub(crate) fn convert_doc(svg_doc: &svgtree::Document, opt: &Options) -> Result<
     // the tree's fontdb.
     #[cfg(feature = "text")]
     {
-        tree.fontdb = cache.fontdb;
+        tree.fonts = cache.fonts;
     }
 
     if restore_viewbox {

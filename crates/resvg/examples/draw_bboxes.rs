@@ -26,7 +26,7 @@ fn main() {
         ..usvg::Options::default()
     };
 
-    opt.fontdb_mut().load_system_fonts();
+    opt.fonts_mut().load_system_fonts();
 
     let svg_data = std::fs::read(&args[1]).unwrap();
     let tree = usvg::Tree::from_data(&svg_data, &opt).unwrap();

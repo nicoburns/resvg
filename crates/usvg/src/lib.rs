@@ -67,5 +67,8 @@ pub use roxmltree;
 #[cfg(feature = "text")]
 pub use fontdb;
 
+#[cfg(feature = "text")]
+pub use fontique;
+
 pub use writer::WriteOptions;
 pub use xmlwriter::Indent;

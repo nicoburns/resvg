@@ -430,7 +430,7 @@ fn process(args: Args) -> Result<(), String> {
             .unwrap(),
         image_href_resolver: usvg::ImageHrefResolver::default(),
         font_resolver: usvg::FontResolver::default(),
-        fontdb: Arc::new(fontdb),
+        fonts: Arc::new(fontdb),
         style_sheet,
     };
 

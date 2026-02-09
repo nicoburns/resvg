@@ -87,7 +87,7 @@ fn process() -> Result<(), String> {
 
     if has_text_nodes {
         timed(args.perf, "FontDB", || {
-            load_fonts(&args.raw_args, args.usvg.fontdb_mut());
+            load_fonts(&args.raw_args, args.usvg.fonts_mut());
         });
     }
 
@@ -576,7 +576,7 @@ fn parse_args() -> Result<Args, String> {
         default_size,
         image_href_resolver: usvg::ImageHrefResolver::default(),
         font_resolver: usvg::FontResolver::default(),
-        fontdb: Arc::new(fontdb::Database::new()),
+        fonts: Arc::new(fontdb::Database::new()),
         style_sheet,
     };
 

@@ -125,9 +125,9 @@ impl crate::Tree {
                 resolve_string: Box::new(|_, _| None),
             },
             // In the referenced SVG, we start with the unmodified user-provided
-            // fontdb, not the one from the cache.
+            // font colletion, not the one from the cache.
             #[cfg(feature = "text")]
-            fontdb: opt.fontdb.clone(),
+            fonts: opt.fonts.clone(),
             // Can't clone the resolver, so we create a new one that forwards to it.
             #[cfg(feature = "text")]
             font_resolver: crate::FontResolver {

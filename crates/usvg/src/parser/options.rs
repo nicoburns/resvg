@@ -5,6 +5,9 @@
 use std::sync::Arc;
 
 #[cfg(feature = "text")]
+use fontique::CollectionOptions;
+
+#[cfg(feature = "text")]
 use crate::FontResolver;
 use crate::{ImageHrefResolver, ImageRendering, ShapeRendering, Size, TextRendering};
 
@@ -89,12 +92,9 @@ pub struct Options<'a> {
     ///
     /// This is a base database. If a custom `font_resolver` is specified,
     /// additional fonts can be loaded during parsing. Those will be added to a
-    /// copy of this database. The full database containing all fonts referenced
-    /// in a `Tree` becomes available as [`Tree::fontdb`](crate::Tree::fontdb)
-    /// after parsing. If no fonts were loaded dynamically, that database will
-    /// be the same as this one.
+    /// copy of this database.
     #[cfg(feature = "text")]
-    pub fontdb: Arc<fontdb::Database>,
+    pub fonts: Arc<fontique::Collection>,
     /// A CSS stylesheet that should be injected into the SVG. Can be used to overwrite
     /// certain attributes.
     pub style_sheet: Option<String>,
@@ -117,7 +117,10 @@ impl Default for Options<'_> {
             #[cfg(feature = "text")]
             font_resolver: FontResolver::default(),
             #[cfg(feature = "text")]
-            fontdb: Arc::new(fontdb::Database::new()),
+            fonts: Arc::new(fontique::Collection::new(CollectionOptions {
+                system_fonts: false,
+                shared: false,
+            })),
             style_sheet: None,
         }
     }
@@ -138,7 +141,7 @@ impl Options<'_> {
     ///
     /// This clones the database if it is currently shared.
     #[cfg(feature = "text")]
-    pub fn fontdb_mut(&mut self) -> &mut fontdb::Database {
-        Arc::make_mut(&mut self.fontdb)
+    pub fn fonts_mut(&mut self) -> &mut fontique::Collection {
+        Arc::make_mut(&mut self.fonts)
     }
 }

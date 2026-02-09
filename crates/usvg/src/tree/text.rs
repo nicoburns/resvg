@@ -33,35 +33,38 @@ impl Default for FontStretch {
 }
 
 #[cfg(feature = "text")]
-impl From<fontdb::Stretch> for FontStretch {
-    fn from(stretch: fontdb::Stretch) -> Self {
+impl From<text_primitives::FontWidth> for FontStretch {
+    fn from(stretch: text_primitives::FontWidth) -> Self {
         match stretch {
-            fontdb::Stretch::UltraCondensed => FontStretch::UltraCondensed,
-            fontdb::Stretch::ExtraCondensed => FontStretch::ExtraCondensed,
-            fontdb::Stretch::Condensed => FontStretch::Condensed,
-            fontdb::Stretch::SemiCondensed => FontStretch::SemiCondensed,
-            fontdb::Stretch::Normal => FontStretch::Normal,
-            fontdb::Stretch::SemiExpanded => FontStretch::SemiExpanded,
-            fontdb::Stretch::Expanded => FontStretch::Expanded,
-            fontdb::Stretch::ExtraExpanded => FontStretch::ExtraExpanded,
-            fontdb::Stretch::UltraExpanded => FontStretch::UltraExpanded,
+            text_primitives::FontWidth::ULTRA_CONDENSED => FontStretch::UltraCondensed,
+            text_primitives::FontWidth::EXTRA_CONDENSED => FontStretch::ExtraCondensed,
+            text_primitives::FontWidth::CONDENSED => FontStretch::Condensed,
+            text_primitives::FontWidth::SEMI_CONDENSED => FontStretch::SemiCondensed,
+            text_primitives::FontWidth::NORMAL => FontStretch::Normal,
+            text_primitives::FontWidth::SEMI_EXPANDED => FontStretch::SemiExpanded,
+            text_primitives::FontWidth::EXPANDED => FontStretch::Expanded,
+            text_primitives::FontWidth::EXTRA_EXPANDED => FontStretch::ExtraExpanded,
+            text_primitives::FontWidth::ULTRA_EXPANDED => FontStretch::UltraExpanded,
+
+            // FIXME: support arbitrary font width
+            _ => FontStretch::Normal,
         }
     }
 }
 
 #[cfg(feature = "text")]
-impl From<FontStretch> for fontdb::Stretch {
+impl From<FontStretch> for text_primitives::FontWidth {
     fn from(stretch: FontStretch) -> Self {
         match stretch {
-            FontStretch::UltraCondensed => fontdb::Stretch::UltraCondensed,
-            FontStretch::ExtraCondensed => fontdb::Stretch::ExtraCondensed,
-            FontStretch::Condensed => fontdb::Stretch::Condensed,
-            FontStretch::SemiCondensed => fontdb::Stretch::SemiCondensed,
-            FontStretch::Normal => fontdb::Stretch::Normal,
-            FontStretch::SemiExpanded => fontdb::Stretch::SemiExpanded,
-            FontStretch::Expanded => fontdb::Stretch::Expanded,
-            FontStretch::ExtraExpanded => fontdb::Stretch::ExtraExpanded,
-            FontStretch::UltraExpanded => fontdb::Stretch::UltraExpanded,
+            FontStretch::UltraCondensed => text_primitives::FontWidth::ULTRA_CONDENSED,
+            FontStretch::ExtraCondensed => text_primitives::FontWidth::EXTRA_CONDENSED,
+            FontStretch::Condensed => text_primitives::FontWidth::CONDENSED,
+            FontStretch::SemiCondensed => text_primitives::FontWidth::SEMI_CONDENSED,
+            FontStretch::Normal => text_primitives::FontWidth::NORMAL,
+            FontStretch::SemiExpanded => text_primitives::FontWidth::SEMI_EXPANDED,
+            FontStretch::Expanded => text_primitives::FontWidth::EXPANDED,
+            FontStretch::ExtraExpanded => text_primitives::FontWidth::EXTRA_EXPANDED,
+            FontStretch::UltraExpanded => text_primitives::FontWidth::ULTRA_EXPANDED,
         }
     }
 }
@@ -118,23 +121,27 @@ impl Default for FontStyle {
 }
 
 #[cfg(feature = "text")]
-impl From<fontdb::Style> for FontStyle {
-    fn from(style: fontdb::Style) -> Self {
+impl From<text_primitives::FontStyle> for FontStyle {
+    fn from(style: text_primitives::FontStyle) -> Self {
         match style {
-            fontdb::Style::Normal => FontStyle::Normal,
-            fontdb::Style::Italic => FontStyle::Italic,
-            fontdb::Style::Oblique => FontStyle::Oblique,
+            text_primitives::FontStyle::Normal => FontStyle::Normal,
+            text_primitives::FontStyle::Italic => FontStyle::Italic,
+
+            // FIXME: support custom oblique angle
+            text_primitives::FontStyle::Oblique(_) => FontStyle::Oblique,
         }
     }
 }
 
 #[cfg(feature = "text")]
-impl From<FontStyle> for fontdb::Style {
+impl From<FontStyle> for text_primitives::FontStyle {
     fn from(style: FontStyle) -> Self {
         match style {
-            FontStyle::Normal => fontdb::Style::Normal,
-            FontStyle::Italic => fontdb::Style::Italic,
-            FontStyle::Oblique => fontdb::Style::Oblique,
+            FontStyle::Normal => text_primitives::FontStyle::Normal,
+            FontStyle::Italic => text_primitives::FontStyle::Italic,
+
+            // FIXME: support custom oblique angle
+            FontStyle::Oblique => text_primitives::FontStyle::Oblique(None),
         }
     }
 }

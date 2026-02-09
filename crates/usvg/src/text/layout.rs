@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 use std::num::NonZeroU16;
 use std::sync::Arc;
 
-use fontdb::{Database, ID};
+use fontdb::ID;
 use kurbo::{ParamCurve, ParamCurveArclen, ParamCurveDeriv};
 use skrifa::MetadataProvider;
 use skrifa::instance::Location;
@@ -201,7 +201,7 @@ impl GlyphCluster {
 pub(crate) fn layout_text(
     text_node: &Text,
     resolver: &FontResolver,
-    fontdb: &mut Arc<fontdb::Database>,
+    fonts: &mut Arc<fontique::Collection>,
 ) -> Option<(Vec<Span>, NonZeroRect)> {
     let mut fonts_cache: FontsCache = HashMap::new();
 
@@ -209,7 +209,7 @@ pub(crate) fn layout_text(
         for span in &chunk.spans {
             if !fonts_cache.contains_key(&span.font) {
                 if let Some(font) =
-                    (resolver.select_font)(&span.font, fontdb).and_then(|id| fontdb.load_font(id))
+                    (resolver.select_font)(&span.font, fonts).and_then(|id| fontdb.load_font(id))
                 {
                     fonts_cache.insert(span.font.clone(), Arc::new(font));
                 }
@@ -862,7 +862,7 @@ fn process_chunk(
     chunk: &TextChunk,
     fonts_cache: &FontsCache,
     resolver: &FontResolver,
-    fontdb: &mut Arc<fontdb::Database>,
+    fonts: &mut Arc<fontique::Collection>,
 ) -> Vec<GlyphCluster> {
     // The way this function works is a bit tricky.
     //
@@ -916,7 +916,7 @@ fn process_chunk(
             span.font_size.get(),
             span.font_optical_sizing,
             resolver,
-            fontdb,
+            fonts,
         );
 
         // Do nothing with the first run.
@@ -1205,7 +1205,7 @@ pub(crate) trait DatabaseExt {
     fn has_char(&self, id: ID, c: char) -> bool;
 }
 
-impl DatabaseExt for Database {
+impl DatabaseExt for fontique::Collection {
     #[inline(never)]
     fn load_font(&self, id: ID) -> Option<ResolvedFont> {
         self.with_face_data(id, |data, face_index| -> Option<ResolvedFont> {
@@ -1313,7 +1313,7 @@ pub(crate) fn shape_text(
     font_size: f32,
     font_optical_sizing: crate::FontOpticalSizing,
     resolver: &FontResolver,
-    fontdb: &mut Arc<fontdb::Database>,
+    fonts: &mut Arc<fontique::Collection>,
 ) -> Vec<Glyph> {
     let mut glyphs = shape_text_with_font(
         text,
@@ -1323,7 +1323,7 @@ pub(crate) fn shape_text(
         variations,
         font_size,
         font_optical_sizing,
-        fontdb,
+        fonts,
     )
     .unwrap_or_default();
 
@@ -1341,8 +1341,8 @@ pub(crate) fn shape_text(
         }
 
         if let Some(c) = missing {
-            let fallback_font = match (resolver.select_fallback)(c, &used_fonts, fontdb)
-                .and_then(|id| fontdb.load_font(id))
+            let fallback_font = match (resolver.select_fallback)(c, &used_fonts, fonts)
+                .and_then(|id| fonts.load_font(id))
             {
                 Some(v) => Arc::new(v),
                 None => break 'outer,
@@ -1357,7 +1357,7 @@ pub(crate) fn shape_text(
                 variations,
                 font_size,
                 font_optical_sizing,
-                fontdb,
+                fonts,
             )
             .unwrap_or_default();
 
@@ -1417,9 +1417,9 @@ fn shape_text_with_font(
     variations: &[crate::FontVariation],
     font_size: f32,
     font_optical_sizing: crate::FontOpticalSizing,
-    fontdb: &fontdb::Database,
+    fonts: &fontique::Collection,
 ) -> Option<Vec<Glyph>> {
-    fontdb.with_face_data(font.id, |font_data, face_index| -> Option<Vec<Glyph>> {
+    fonts.with_face_data(font.id, |font_data, face_index| -> Option<Vec<Glyph>> {
         use harfrust::{Feature, ShaperData, ShaperInstance, Tag, UnicodeBuffer, Variation};
         const OPSZ: Tag = Tag::from_be_bytes(*b"opsz");
 

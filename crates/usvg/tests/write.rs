@@ -33,7 +33,7 @@ fn resave_impl(name: &str, id_prefix: Option<String>, preserve_text: bool) {
 
     let tree = {
         let opt = usvg::Options {
-            fontdb: GLOBAL_FONTDB.clone(),
+            fonts: GLOBAL_FONTDB.clone(),
             ..Default::default()
         };
         usvg::Tree::from_str(&input_svg, &opt).unwrap()

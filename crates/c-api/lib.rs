@@ -207,7 +207,7 @@ pub extern "C" fn resvg_options_set_serif_family(opt: *mut resvg_options, family
     #[cfg(feature = "text")]
     {
         cast_opt(opt)
-            .fontdb_mut()
+            .fonts_mut()
             .set_serif_family(cstr_to_str(family).unwrap().to_string());
     }
 }
@@ -228,7 +228,7 @@ pub extern "C" fn resvg_options_set_sans_serif_family(
     #[cfg(feature = "text")]
     {
         cast_opt(opt)
-            .fontdb_mut()
+            .fonts_mut()
             .set_sans_serif_family(cstr_to_str(family).unwrap().to_string());
     }
 }
@@ -246,7 +246,7 @@ pub extern "C" fn resvg_options_set_cursive_family(opt: *mut resvg_options, fami
     #[cfg(feature = "text")]
     {
         cast_opt(opt)
-            .fontdb_mut()
+            .fonts_mut()
             .set_cursive_family(cstr_to_str(family).unwrap().to_string());
     }
 }
@@ -264,7 +264,7 @@ pub extern "C" fn resvg_options_set_fantasy_family(opt: *mut resvg_options, fami
     #[cfg(feature = "text")]
     {
         cast_opt(opt)
-            .fontdb_mut()
+            .fonts_mut()
             .set_fantasy_family(cstr_to_str(family).unwrap().to_string());
     }
 }
@@ -285,7 +285,7 @@ pub extern "C" fn resvg_options_set_monospace_family(
     #[cfg(feature = "text")]
     {
         cast_opt(opt)
-            .fontdb_mut()
+            .fonts_mut()
             .set_monospace_family(cstr_to_str(family).unwrap().to_string());
     }
 }
@@ -416,7 +416,7 @@ pub extern "C" fn resvg_options_load_font_data(
     #[cfg(feature = "text")]
     {
         let data = unsafe { slice::from_raw_parts(data as *const u8, len) };
-        cast_opt(opt).fontdb_mut().load_font_data(data.to_vec())
+        cast_opt(opt).fonts_mut().load_font_data(data.to_vec())
     }
 }
 
@@ -440,7 +440,7 @@ pub extern "C" fn resvg_options_load_font_file(
             None => return resvg_error::NOT_AN_UTF8_STR as i32,
         };
 
-        if cast_opt(opt).fontdb_mut().load_font_file(file_path).is_ok() {
+        if cast_opt(opt).fonts_mut().load_font_file(file_path).is_ok() {
             resvg_error::OK as i32
         } else {
             resvg_error::FILE_OPEN_FAILED as i32
@@ -470,7 +470,7 @@ pub extern "C" fn resvg_options_load_font_file(
 pub extern "C" fn resvg_options_load_system_fonts(opt: *mut resvg_options) {
     #[cfg(feature = "text")]
     {
-        cast_opt(opt).fontdb_mut().load_system_fonts();
+        cast_opt(opt).fonts_mut().load_system_fonts();
     }
 }
 

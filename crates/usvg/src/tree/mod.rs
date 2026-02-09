@@ -1591,7 +1591,7 @@ pub struct Tree {
     pub(crate) masks: Vec<Arc<Mask>>,
     pub(crate) filters: Vec<Arc<filter::Filter>>,
     #[cfg(feature = "text")]
-    pub(crate) fontdb: Arc<fontdb::Database>,
+    pub(crate) fonts: Arc<fontique::Collection>,
 }
 
 impl Tree {
@@ -1667,8 +1667,8 @@ impl Tree {
 
     /// Returns the font database that applies to all text nodes in the tree.
     #[cfg(feature = "text")]
-    pub fn fontdb(&self) -> &Arc<fontdb::Database> {
-        &self.fontdb
+    pub fn fontdb(&self) -> &Arc<fontique::Collection> {
+        &self.fonts
     }
 
     pub(crate) fn collect_paint_servers(&mut self) {

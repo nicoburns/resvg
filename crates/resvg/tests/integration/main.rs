@@ -55,7 +55,7 @@ pub fn render_inner(name: &str, test_mode: TestMode) -> usize {
     let make_ref = std::env::var("MAKE_REF").is_ok();
 
     let opt = usvg::Options {
-        fontdb: GLOBAL_FONTDB.clone(),
+        fonts: GLOBAL_FONTDB.clone(),
         resources_dir: Some(
             std::path::PathBuf::from(&svg_path)
                 .parent()

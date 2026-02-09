@@ -89,7 +89,7 @@ pub(crate) fn flatten(text: &mut Text, cache: &mut Cache) -> Option<(Group, NonZ
 
         for glyph in &span.positioned_glyphs {
             // A (best-effort conversion of a) COLR glyph.
-            if let Some(tree) = cache.fontdb_colr(glyph.font, glyph.id) {
+            if let Some(tree) = cache.get_colr_glyph(glyph.font, glyph.id) {
                 let mut group = Group {
                     transform: glyph.colr_transform(),
                     ..Group::empty()
@@ -101,7 +101,7 @@ pub(crate) fn flatten(text: &mut Text, cache: &mut Cache) -> Option<(Group, NonZ
                 new_children.push(Node::Group(Box::new(group)));
             }
             // An SVG glyph. Will return the usvg node containing the glyph descriptions.
-            else if let Some(node) = cache.fontdb_svg(glyph.font, glyph.id) {
+            else if let Some(node) = cache.get_svg_glyph(glyph.font, glyph.id) {
                 push_outline_paths(span, &mut span_builder, &mut new_children, rendering_mode);
 
                 let mut group = Group {
@@ -115,7 +115,7 @@ pub(crate) fn flatten(text: &mut Text, cache: &mut Cache) -> Option<(Group, NonZ
                 new_children.push(Node::Group(Box::new(group)));
             }
             // A bitmap glyph.
-            else if let Some(img) = cache.fontdb_raster(glyph.font, glyph.id) {
+            else if let Some(img) = cache.get_raster_glyph(glyph.font, glyph.id) {
                 push_outline_paths(span, &mut span_builder, &mut new_children, rendering_mode);
 
                 let transform = if img.is_sbix {
@@ -146,7 +146,7 @@ pub(crate) fn flatten(text: &mut Text, cache: &mut Cache) -> Option<(Group, NonZ
                         && cache.has_opsz_axis(glyph.font));
 
                 let outline = if needs_variations {
-                    cache.fontdb.outline_with_variations(
+                    cache.fonts.outline_with_variations(
                         glyph.font,
                         glyph.id,
                         &span.variations,
@@ -154,7 +154,7 @@ pub(crate) fn flatten(text: &mut Text, cache: &mut Cache) -> Option<(Group, NonZ
                         span.font_optical_sizing,
                     )
                 } else {
-                    cache.fontdb_outline(glyph.font, glyph.id)
+                    cache.get_outline_glyph(glyph.font, glyph.id)
                 };
 
                 if let Some(outline) = outline.and_then(|p| p.transform(glyph.outline_transform()))
@@ -240,7 +240,7 @@ pub(crate) struct BitmapImage {
     is_sbix: bool,
 }
 
-impl DatabaseExt for Database {
+impl DatabaseExt for fontique::Collection {
     #[inline(never)]
     fn outline(&self, id: ID, glyph_id: GlyphId) -> Option<tiny_skia_path::Path> {
         self.with_face_data(id, |data, face_index| -> Option<tiny_skia_path::Path> {

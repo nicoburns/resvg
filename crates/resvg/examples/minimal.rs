@@ -16,7 +16,7 @@ fn main() {
                 .and_then(|p| p.parent().map(|p| p.to_path_buf())),
             ..usvg::Options::default()
         };
-        opt.fontdb_mut().load_system_fonts();
+        opt.fonts_mut().load_system_fonts();
 
         let svg_data = std::fs::read(&args[1]).unwrap();
         usvg::Tree::from_data(&svg_data, &opt).unwrap()

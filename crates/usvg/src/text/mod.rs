@@ -1,9 +1,10 @@
 // Copyright 2024 the Resvg Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use std::sync::Arc;
+use std::{borrow::Cow, sync::Arc};
 
 use fontdb::{Database, ID};
+use fontique::Collection;
 use svgtypes::FontFamily;
 
 use self::layout::DatabaseExt;
@@ -45,7 +46,7 @@ impl From<GlyphId> for skrifa::raw::types::GlyphId {
 /// mutated additively. Removing fonts or replacing the entire database will
 /// break things.
 pub type FontSelectionFn<'a> =
-    Box<dyn Fn(&Font, &mut Arc<Database>) -> Option<ID> + Send + Sync + 'a>;
+    Box<dyn Fn(&Font, &mut Arc<Collection>) -> Option<ID> + Send + Sync + 'a>;
 
 /// A shorthand for [FontResolver]'s fallback selection function.
 ///
@@ -59,7 +60,7 @@ pub type FontSelectionFn<'a> =
 /// fonts dynamically. See the documentation of [`FontSelectionFn`] for more
 /// details.
 pub type FallbackSelectionFn<'a> =
-    Box<dyn Fn(char, &[ID], &mut Arc<Database>) -> Option<ID> + Send + Sync + 'a>;
+    Box<dyn Fn(char, &[ID], &mut Arc<Collection>) -> Option<ID> + Send + Sync + 'a>;
 
 /// A font resolver for `<text>` elements.
 ///
@@ -94,58 +95,62 @@ impl FontResolver<'_> {
     /// [`query`](fontdb::Database::query) on the font database specified in the
     /// [`Options`](crate::Options).
     pub fn default_font_selector() -> FontSelectionFn<'static> {
-        Box::new(move |font, fontdb| {
+        use text_primitives::{FontFamilyName, GenericFamily};
+
+        Box::new(move |font: &Font, fontdb: Arc<Collection>| {
             let mut name_list = Vec::new();
             for family in &font.families {
                 name_list.push(match family {
-                    FontFamily::Serif => fontdb::Family::Serif,
-                    FontFamily::SansSerif => fontdb::Family::SansSerif,
-                    FontFamily::Cursive => fontdb::Family::Cursive,
-                    FontFamily::Fantasy => fontdb::Family::Fantasy,
-                    FontFamily::Monospace => fontdb::Family::Monospace,
-                    FontFamily::Named(s) => fontdb::Family::Name(s),
+                    FontFamily::Serif => FontFamilyName::Generic(GenericFamily::Serif),
+                    FontFamily::SansSerif => FontFamilyName::Generic(GenericFamily::SansSerif),
+                    FontFamily::Cursive => FontFamilyName::Generic(GenericFamily::Cursive),
+                    FontFamily::Fantasy => FontFamilyName::Generic(GenericFamily::Fantasy),
+                    FontFamily::Monospace => FontFamilyName::Generic(GenericFamily::Monospace),
+                    FontFamily::Named(s) => FontFamilyName::Named(Cow::from(s)),
                 });
             }
 
             // Use the default font as fallback.
-            name_list.push(fontdb::Family::Serif);
+            name_list.push(FontFamilyName::Generic(GenericFamily::Serif));
 
             let stretch = match font.stretch {
-                FontStretch::UltraCondensed => fontdb::Stretch::UltraCondensed,
-                FontStretch::ExtraCondensed => fontdb::Stretch::ExtraCondensed,
-                FontStretch::Condensed => fontdb::Stretch::Condensed,
-                FontStretch::SemiCondensed => fontdb::Stretch::SemiCondensed,
-                FontStretch::Normal => fontdb::Stretch::Normal,
-                FontStretch::SemiExpanded => fontdb::Stretch::SemiExpanded,
-                FontStretch::Expanded => fontdb::Stretch::Expanded,
-                FontStretch::ExtraExpanded => fontdb::Stretch::ExtraExpanded,
-                FontStretch::UltraExpanded => fontdb::Stretch::UltraExpanded,
+                FontStretch::UltraCondensed => text_primitives::FontWidth::ULTRA_CONDENSED,
+                FontStretch::ExtraCondensed => text_primitives::FontWidth::EXTRA_CONDENSED,
+                FontStretch::Condensed => text_primitives::FontWidth::CONDENSED,
+                FontStretch::SemiCondensed => text_primitives::FontWidth::SEMI_CONDENSED,
+                FontStretch::Normal => text_primitives::FontWidth::NORMAL,
+                FontStretch::SemiExpanded => text_primitives::FontWidth::SEMI_EXPANDED,
+                FontStretch::Expanded => text_primitives::FontWidth::EXPANDED,
+                FontStretch::ExtraExpanded => text_primitives::FontWidth::EXTRA_EXPANDED,
+                FontStretch::UltraExpanded => text_primitives::FontWidth::ULTRA_EXPANDED,
             };
 
             let style = match font.style {
-                FontStyle::Normal => fontdb::Style::Normal,
-                FontStyle::Italic => fontdb::Style::Italic,
-                FontStyle::Oblique => fontdb::Style::Oblique,
+                FontStyle::Normal => text_primitives::FontStyle::Normal,
+                FontStyle::Italic => text_primitives::FontStyle::Italic,
+
+                // TODO: support arbitrary angle
+                FontStyle::Oblique => text_primitives::FontStyle::Oblique(None),
             };
 
-            let query = fontdb::Query {
-                families: &name_list,
-                weight: fontdb::Weight(font.weight),
-                stretch,
-                style,
-            };
+            // let query = fontdb::Query {
+            //     families: &name_list,
+            //     weight: fontdb::Weight(font.weight),
+            //     stretch,
+            //     style,
+            // };
 
-            let id = fontdb.query(&query);
-            if id.is_none() {
-                log::warn!(
-                    "No match for '{}' font-family.",
-                    font.families
-                        .iter()
-                        .map(|f| f.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                );
-            }
+            // let id = fontdb.query(&query);
+            // if id.is_none() {
+            //     log::warn!(
+            //         "No match for '{}' font-family.",
+            //         font.families
+            //             .iter()
+            //             .map(|f| f.to_string())
+            //             .collect::<Vec<_>>()
+            //             .join(", ")
+            //     );
+            // }
 
             id
         })
