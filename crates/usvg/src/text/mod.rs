@@ -182,16 +182,10 @@ impl FontResolver<'_> {
                 let base_family = base_face
                     .families
                     .iter()
-                    .find(|f| f.1 == fontdb::Language::English_UnitedStates)
+                    .find(|f| f.1.as_str() == "en-US")
                     .unwrap_or(&base_face.families[0]);
 
-                let new_family = face
-                    .families
-                    .iter()
-                    .find(|f| f.1 == fontdb::Language::English_UnitedStates)
-                    .unwrap_or(&base_face.families[0]);
-
-                log::warn!("Fallback from {} to {}.", base_family.0, new_family.0);
+                log::warn!("Fallback from {} to {}.", base_family.0, base_family.0);
                 return Some(face.id);
             }
 

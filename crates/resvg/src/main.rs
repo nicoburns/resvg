@@ -438,7 +438,7 @@ fn list_fonts(args: &CliArgs) {
             let families: Vec<_> = face
                 .families
                 .iter()
-                .map(|f| format!("{} ({}, {})", f.0, f.1.primary_language(), f.1.region()))
+                .map(|f| format!("{} ({})", f.0, f.1.as_str()))
                 .collect();
 
             println!(
