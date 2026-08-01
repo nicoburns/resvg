@@ -1,10 +1,11 @@
 [package]
 name = "resvg-capi"
-version = "0.47.0"
-keywords = ["svg", "render", "raster", "c-api"]
+version.workspace = true
 license.workspace = true
-edition = "2024"
-rust-version = "1.89.0"
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+keywords = ["svg", "render", "raster", "c-api"]
 workspace = "../.."
 
 [lib]
@@ -13,8 +14,8 @@ path = "lib.rs"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-log = "0.4"
-resvg = { path = "../resvg", default-features = false }
+log = { workspace = true }
+resvg = { workspace = true, default-features = false }
 
 [features]
 default = ["svgz", "text", "system-fonts", "memmap-fonts", "raster-images"]
